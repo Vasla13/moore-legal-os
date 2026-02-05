@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from '../firebase';
 import { ArrowLeft, Save, FileText, Gavel, Shield, Banknote, Phone, Lock, Clock, CheckCircle, ExternalLink, Building2, Users, User } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 
-import OrdonnanceEditor from '../components/OrdonnanceEditor';
-import ContratEditor from '../components/documents/ContratEditor';
-import PlainteEditor from '../components/documents/PlainteEditor';
-import FactureEditor from '../components/documents/FactureEditor';
+const OrdonnanceEditor = lazy(() => import('../components/OrdonnanceEditor'));
+const ContratEditor = lazy(() => import('../components/documents/ContratEditor'));
+const PlainteEditor = lazy(() => import('../components/documents/PlainteEditor'));
+const FactureEditor = lazy(() => import('../components/documents/FactureEditor'));
 
 export default function ClientDossier() {
   const { id } = useParams();
@@ -103,6 +103,12 @@ export default function ClientDossier() {
      if (client?.type === 'organisation') return <Users size={14} className="text-neon-blue"/>;
      return <Shield size={14} className="text-neon-blue"/>;
   };
+
+  const editorFallback = (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 text-neon-blue font-mono animate-pulse">
+      CHARGEMENT...
+    </div>
+  );
 
   if (loading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-neon-blue font-mono animate-pulse">CHARGEMENT...</div>;
 
@@ -221,10 +227,12 @@ export default function ClientDossier() {
         </div>
       </main>
 
-      {showOrdonnance && <OrdonnanceEditor client={client} savedData={client.saved_ordonnance} onSave={(data) => handleSaveDocument("ordonnance", data)} onHistoryAdd={handleAddHistory} onClose={() => setShowOrdonnance(false)} />}
-      {showContrat && <ContratEditor client={client} savedData={client.saved_contrat} onSave={(data) => handleSaveDocument("contrat", data)} onHistoryAdd={handleAddHistory} onClose={() => setShowContrat(false)} />}
-      {showPlainte && <PlainteEditor client={client} savedData={client.saved_plainte} onSave={(data) => handleSaveDocument("plainte", data)} onHistoryAdd={handleAddHistory} onClose={() => setShowPlainte(false)} />}
-      {showFacture && <FactureEditor client={client} savedData={client.saved_facture} onSave={(data) => handleSaveDocument("facture", data)} onHistoryAdd={handleAddHistory} onClose={() => setShowFacture(false)} />}
+      <Suspense fallback={editorFallback}>
+        {showOrdonnance && <OrdonnanceEditor client={client} savedData={client.saved_ordonnance} onSave={(data) => handleSaveDocument("ordonnance", data)} onHistoryAdd={handleAddHistory} onClose={() => setShowOrdonnance(false)} />}
+        {showContrat && <ContratEditor client={client} savedData={client.saved_contrat} onSave={(data) => handleSaveDocument("contrat", data)} onHistoryAdd={handleAddHistory} onClose={() => setShowContrat(false)} />}
+        {showPlainte && <PlainteEditor client={client} savedData={client.saved_plainte} onSave={(data) => handleSaveDocument("plainte", data)} onHistoryAdd={handleAddHistory} onClose={() => setShowPlainte(false)} />}
+        {showFacture && <FactureEditor client={client} savedData={client.saved_facture} onSave={(data) => handleSaveDocument("facture", data)} onHistoryAdd={handleAddHistory} onClose={() => setShowFacture(false)} />}
+      </Suspense>
     </Layout>
   );
 }

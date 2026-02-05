@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, Plus, Trash2, Save } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
 import FacturePreview from './FacturePreview';
 
 export default function FactureEditor({ client, onClose, savedData, onSave, onHistoryAdd }) {
@@ -49,7 +48,7 @@ export default function FactureEditor({ client, onClose, savedData, onSave, onHi
     if (onSave) onSave({ ...data, items });
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     handleSave();
 
     // ICI : ON ENVOIE LES DONNÉES COMPLÈTES À L'HISTORIQUE
@@ -63,6 +62,8 @@ export default function FactureEditor({ client, onClose, savedData, onSave, onHi
     }
 
     const element = document.getElementById('facture-preview');
+    if (!element) return;
+    const { default: html2pdf } = await import('html2pdf.js');
     const opt = {
       margin: 0,
       filename: `FACTURE_${data.ref_facture}.pdf`,

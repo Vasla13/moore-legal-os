@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, Plus, Trash2, Image as ImageIcon, Save } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
 import PlaintePreview from './PlaintePreview';
 
 export default function PlainteEditor({ client, onClose, savedData, onSave, onHistoryAdd }) {
@@ -66,7 +65,7 @@ export default function PlainteEditor({ client, onClose, savedData, onSave, onHi
   };
 
   // --- GÉNÉRATION PDF & HISTORIQUE ---
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     // 1. Sauvegarder
     handleSave();
 
@@ -82,6 +81,8 @@ export default function PlainteEditor({ client, onClose, savedData, onSave, onHi
 
     // 3. PDF
     const element = document.getElementById('plainte-preview');
+    if (!element) return;
+    const { default: html2pdf } = await import('html2pdf.js');
     const opt = {
       margin: 0,
       filename: `PLAINTE_${data.victime.replace(/ /g, '_')}.pdf`,

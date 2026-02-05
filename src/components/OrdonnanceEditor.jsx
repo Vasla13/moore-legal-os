@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
 import OrdonnanceForm from './documents/OrdonnanceForm';
 import OrdonnancePreview from './documents/OrdonnancePreview';
 
@@ -42,7 +41,7 @@ export default function OrdonnanceEditor({ client, onClose, savedData, onSave, o
     if (onSave) onSave({ ...data, logo: logo });
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     // 1. Sauvegarde
     handleSave();
 
@@ -58,6 +57,8 @@ export default function OrdonnanceEditor({ client, onClose, savedData, onSave, o
 
     // 3. PDF
     const element = document.getElementById('document-preview');
+    if (!element) return;
+    const { default: html2pdf } = await import('html2pdf.js');
     const opt = {
       margin: 0,
       filename: `ORDONNANCE_${data.accuse.replace(/ /g, '_')}.pdf`,

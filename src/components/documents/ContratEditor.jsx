@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, Save } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
 import ContratPreview from './ContratPreview';
 
 export default function ContratEditor({ client, onClose, savedData, onSave, onHistoryAdd }) {
@@ -24,7 +23,7 @@ export default function ContratEditor({ client, onClose, savedData, onSave, onHi
     if (onSave) onSave(data);
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     // 1. Sauvegarde
     handleSave();
 
@@ -35,6 +34,8 @@ export default function ContratEditor({ client, onClose, savedData, onSave, onHi
 
     // 3. PDF
     const element = document.getElementById('contrat-preview');
+    if (!element) return;
+    const { default: html2pdf } = await import('html2pdf.js');
     const opt = {
       margin: 0,
       filename: `CONTRAT_${data.client.replace(/ /g, '_')}.pdf`,

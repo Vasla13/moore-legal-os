@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./firebase";
 import { Scale, ShieldCheck, Fingerprint, Lock, AlertTriangle } from 'lucide-react';
-import Dashboard from './pages/Dashboard';
-import ClientDossier from './pages/ClientDossier';
+
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const ClientDossier = lazy(() => import('./pages/ClientDossier'));
 
 function App() {
   const [user, setUser] = useState(null);
@@ -83,13 +84,21 @@ function App() {
 
   if (authLoading) return null;
 
+  const routeFallback = (
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center text-neon-blue font-mono animate-pulse">
+      CHARGEMENT...
+    </div>
+  );
+
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={!user ? <LoginScreen /> : <Navigate to="/" />} />
-        <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
-        <Route path="/dossier/:id" element={user ? <ClientDossier /> : <Navigate to="/login" />} />
-      </Routes>
+      <Suspense fallback={routeFallback}>
+        <Routes>
+          <Route path="/login" element={!user ? <LoginScreen /> : <Navigate to="/" />} />
+          <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+          <Route path="/dossier/:id" element={user ? <ClientDossier /> : <Navigate to="/login" />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }
