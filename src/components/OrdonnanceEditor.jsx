@@ -21,7 +21,7 @@ export default function OrdonnanceEditor({ client, onClose, savedData, onSave, o
     titre_considerant: "Considérant la nécessité impérieuse de garantir la sécurité physique et morale de la victime,",
     duree: "un (1) mois",
     decision_texte: "fait l’objet d’une mesure d’éloignement immédiate, à compter de la notification de la présente ordonnance.",
-    interdictions: `• S'approcher à moins de 50 mètres de la victime ;\n• Entrer en contact par tout moyen ;\n• Posséder une arme à feu.`
+    interdictions: `S'approcher à moins de 50 mètres de la victime ;\nEntrer en contact par tout moyen ;\nPosséder une arme à feu.`
   };
 
   const [data, setData] = useState(defaultData);
@@ -54,23 +54,22 @@ export default function OrdonnanceEditor({ client, onClose, savedData, onSave, o
     // 1. Sauvegarde
     handleSave();
 
-    // 2. Historique (NOUVEAU)
-    if (onHistoryAdd) {
-        onHistoryAdd(
-          "ORDONNANCE",
-          `CASE-${client?.id?.substring(0,4)}`,
-          "Mesure éloignement",
-          { ...data, logo: logo }
-        );
-    }
-
-    // 3. PDF
+    // 2. PDF
     try {
       const accuseName = safeString(data.accuse, "");
       await exportElementToPdf({
         elementId: 'document-preview',
         filename: `ORDONNANCE_${accuseName.replace(/\s+/g, '_')}.pdf`
       });
+      // 3. Historique (uniquement si PDF OK)
+      if (onHistoryAdd) {
+        await onHistoryAdd(
+          "ORDONNANCE",
+          `CASE-${client?.id?.substring(0,4)}`,
+          "Mesure éloignement",
+          { ...data, logo: logo }
+        );
+      }
     } catch (err) {
       console.error(err);
       setExportError("Échec de génération du PDF. Réessaie dans quelques secondes.");

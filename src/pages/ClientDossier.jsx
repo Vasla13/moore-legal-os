@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from '../firebase';
-import { ArrowLeft, Save, FileText, Gavel, Shield, Banknote, Clock, CheckCircle, ExternalLink, Building2, Users, Search, ArrowUpRight } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Gavel, Shield, Banknote, Clock, CheckCircle, Building2, Users, ArrowUpRight } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 
 const OrdonnanceEditor = lazy(() => import('../components/OrdonnanceEditor'));
@@ -20,8 +20,6 @@ export default function ClientDossier() {
   const [telephone, setTelephone] = useState("");
   const [saving, setSaving] = useState(false);
   const [docSavedMessage, setDocSavedMessage] = useState("");
-  const [historyQuery, setHistoryQuery] = useState("");
-  const [historyFilter, setHistoryFilter] = useState("all");
 
   const [showOrdonnance, setShowOrdonnance] = useState(false);
   const [showContrat, setShowContrat] = useState(false);
@@ -46,11 +44,6 @@ export default function ClientDossier() {
     return new Date(ms).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
   };
 
-  const formatTime = (ms) => {
-    if (!ms) return "";
-    return new Date(ms).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  };
-
   const getTypeLabel = (type) => {
     if (type === 'entreprise') return "Entreprise";
     if (type === 'organisation') return "Organisation";
@@ -63,13 +56,6 @@ export default function ClientDossier() {
     return "border-neon-blue/40 text-neon-blue bg-neon-blue/10";
   };
 
-  const getDocumentTone = (type) => {
-    if (type === "ORDONNANCE") return "border-neon-blue/40 text-neon-blue bg-neon-blue/10";
-    if (type === "CONTRAT") return "border-amber-500/40 text-amber-300 bg-amber-500/10";
-    if (type === "PLAINTE") return "border-red-500/40 text-red-300 bg-red-500/10";
-    if (type === "FACTURE") return "border-emerald-500/40 text-emerald-300 bg-emerald-500/10";
-    return "border-gray-700 text-gray-300 bg-gray-900/40";
-  };
 
   const getStatusTone = (status = "") => {
     const value = status.toLowerCase();
@@ -139,24 +125,6 @@ export default function ClientDossier() {
     } catch (error) { console.error("Erreur historique:", error); }
   };
 
-  // 5. RESTAURATION HISTORIQUE
-  const handleHistoryClick = (log) => {
-    if (!log.data) { alert("Pas de données restaurables."); return; }
-    const tempClient = { ...client };
-    if (log.type === "FACTURE") { tempClient.saved_facture = log.data; setClient(tempClient); setShowFacture(true); } 
-    else if (log.type === "PLAINTE") { tempClient.saved_plainte = log.data; setClient(tempClient); setShowPlainte(true); }
-    else if (log.type === "CONTRAT") { tempClient.saved_contrat = log.data; setClient(tempClient); setShowContrat(true); }
-    else if (log.type === "ORDONNANCE") { tempClient.saved_ordonnance = log.data; setClient(tempClient); setShowOrdonnance(true); }
-  };
-
-  const historyTabs = [
-    { id: "all", label: "Tous" },
-    { id: "ORDONNANCE", label: "Ordonnances" },
-    { id: "CONTRAT", label: "Contrats" },
-    { id: "PLAINTE", label: "Plaintes" },
-    { id: "FACTURE", label: "Factures" },
-  ];
-
   const historyItems = useMemo(() => {
     const items = Array.isArray(client?.history) ? [...client.history] : [];
     items.sort((a, b) => getTimestampMs(b.date) - getTimestampMs(a.date));
@@ -172,19 +140,6 @@ export default function ClientDossier() {
     });
     return map;
   }, [historyItems]);
-
-  const filteredHistory = useMemo(() => {
-    const needle = historyQuery.trim().toLowerCase();
-    return historyItems.filter((log) => {
-      if (historyFilter !== "all" && log.type !== historyFilter) return false;
-      if (!needle) return true;
-      const haystack = [log.type, log.ref, log.desc]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(needle);
-    });
-  }, [historyItems, historyFilter, historyQuery]);
 
   const draftCount = [
     client?.saved_ordonnance,
@@ -384,78 +339,27 @@ export default function ClientDossier() {
                 </div>
             </div>
 
-            <div className="bg-[#0a0a0a] border border-gray-800 p-6 relative max-h-[520px] overflow-y-auto custom-scrollbar">
-                <div className="flex items-center justify-between mb-4 border-b border-gray-800 pb-2">
+            <div className="bg-[#0a0a0a] border border-gray-800 p-6 relative">
+                <div className="flex items-center justify-between mb-3 border-b border-gray-800 pb-2">
                   <h3 className="font-orbitron text-white flex items-center gap-2 text-sm tracking-widest">
                       <Clock size={14} className="text-neon-blue"/> HISTORIQUE ACTIVITÉ
                   </h3>
                   <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
-                    {filteredHistory.length} entrées
+                    {historyItems.length} entrées
                   </span>
                 </div>
-
-                <div className="space-y-3">
-                  <div className="relative">
-                    <Search size={14} className="absolute left-3 top-3 text-gray-500" />
-                    <input
-                      type="text"
-                      value={historyQuery}
-                      onChange={(e) => setHistoryQuery(e.target.value)}
-                      placeholder="Filtrer par type, ref, note..."
-                      className="w-full bg-[#050505] border border-gray-800 text-white p-2 pl-9 font-mono text-xs focus:border-neon-blue outline-none transition-all"
-                    />
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {historyTabs.map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setHistoryFilter(tab.id)}
-                        className={`px-2 py-1 text-[9px] font-orbitron uppercase tracking-widest border transition-all ${
-                          historyFilter === tab.id
-                            ? "border-neon-blue bg-neon-blue/10 text-white"
-                            : "border-gray-800 text-gray-400 hover:border-gray-600"
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
+                <div className="space-y-2">
+                  <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Dernière activité</p>
+                  <p className="text-sm text-white">{lastActivityLabel}</p>
+                  <p className="text-[10px] text-gray-500">{lastActivityDesc}</p>
                 </div>
-
-                <div className="space-y-3 mt-4">
-                    {filteredHistory.length > 0 ? (
-                        filteredHistory.map((log, index) => {
-                          const logMs = getTimestampMs(log.date);
-                          return (
-                            <div 
-                              key={`${log.type}-${index}`} 
-                              onClick={() => log.data && handleHistoryClick(log)}
-                              className={`border border-gray-800 bg-black/40 p-3 transition-all ${log.data ? 'cursor-pointer hover:border-neon-blue/50 hover:bg-black/60' : 'opacity-60'}`}
-                            >
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className={`text-[10px] font-orbitron uppercase tracking-widest px-2 py-1 border ${getDocumentTone(log.type)}`}>
-                                      {log.type}
-                                    </span>
-                                    {log.data && <ExternalLink size={10} className="text-gray-600"/>}
-                                  </div>
-                                  <p className="text-xs text-gray-300 font-mono">{log.ref || "Sans référence"}</p>
-                                  {log.desc && <p className="text-[10px] text-gray-500">{log.desc}</p>}
-                                </div>
-                                <div className="text-right text-[10px] font-mono text-gray-500">
-                                  <div>{formatShortDate(logMs)}</div>
-                                  <div>{formatTime(logMs)}</div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })
-                    ) : (
-                        <p className="text-gray-600 text-xs italic text-center py-6">Aucune activité ne correspond aux filtres.</p>
-                    )}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/dossier/${id}/historique`)}
+                  className="mt-4 w-full py-3 border border-neon-blue/40 text-neon-blue font-orbitron text-xs uppercase tracking-widest hover:bg-neon-blue hover:text-black transition-all"
+                >
+                  Ouvrir l’historique
+                </button>
             </div>
         </div>
 

@@ -6,6 +6,7 @@ import { Scale, ShieldCheck, Fingerprint, Lock, AlertTriangle } from 'lucide-rea
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const ClientDossier = lazy(() => import('./pages/ClientDossier'));
+const ClientHistorique = lazy(() => import('./pages/ClientHistorique'));
 
 function App() {
   const [user, setUser] = useState(null);
@@ -97,6 +98,7 @@ function App() {
           <Route path="/login" element={!user ? <LoginScreen /> : <Navigate to="/" />} />
           <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
           <Route path="/dossier/:id" element={user ? <ClientDossier /> : <Navigate to="/login" />} />
+          <Route path="/dossier/:id/historique" element={user ? <ClientHistorique /> : <Navigate to="/login" />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

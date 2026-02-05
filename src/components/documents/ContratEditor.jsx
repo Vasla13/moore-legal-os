@@ -92,23 +92,22 @@ export default function ContratEditor({ client, onClose, savedData, onSave, onHi
     // 1. Sauvegarde
     handleSave();
 
-    // 2. Historique (NOUVEAU)
-    if (onHistoryAdd) {
-        onHistoryAdd(
-          "CONTRAT",
-          data.ref_dossier,
-          "Mandat de défense",
-          { ...data }
-        );
-    }
-
-    // 3. PDF
+    // 2. PDF
     try {
       const clientName = safeString(data.client, "");
       await exportElementToPdf({
         elementId: 'contrat-preview',
         filename: `CONTRAT_${clientName.replace(/\s+/g, '_')}.pdf`
       });
+      // 3. Historique (uniquement si PDF OK)
+      if (onHistoryAdd) {
+        await onHistoryAdd(
+          "CONTRAT",
+          data.ref_dossier,
+          "Mandat de défense",
+          { ...data }
+        );
+      }
     } catch (err) {
       console.error(err);
       setExportError("Échec de génération du PDF. Réessaie dans quelques secondes.");

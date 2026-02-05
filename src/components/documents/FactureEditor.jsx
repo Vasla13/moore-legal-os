@@ -60,22 +60,20 @@ export default function FactureEditor({ client, onClose, savedData, onSave, onHi
 
     handleSave();
 
-    // ICI : ON ENVOIE LES DONNÉES COMPLÈTES À L'HISTORIQUE
-    if (onHistoryAdd) {
-        onHistoryAdd(
-            "FACTURE", 
-            data.ref_facture, 
-            `Montant: ${totalFinal.toFixed(2)}$`,
-            { ...data, items } // <--- LE 4ème ARGUMENT ESSENTIEL
-        );
-    }
-
     try {
       const factureRef = safeString(data.ref_facture, "FACTURE");
       await exportElementToPdf({
         elementId: 'facture-preview',
         filename: `FACTURE_${factureRef}.pdf`
       });
+      if (onHistoryAdd) {
+        await onHistoryAdd(
+          "FACTURE",
+          data.ref_facture,
+          `Montant: ${totalFinal.toFixed(2)}$`,
+          { ...data, items }
+        );
+      }
     } catch (err) {
       console.error(err);
       setExportError("Échec de génération du PDF. Réessaie dans quelques secondes.");
@@ -112,6 +110,7 @@ export default function FactureEditor({ client, onClose, savedData, onSave, onHi
                 <div><label className="block text-gray-500 text-[10px] mb-1 uppercase">N° Facture</label><input type="text" value={data.ref_facture} onChange={e => setData({...data, ref_facture: e.target.value})} className="w-full bg-[#111] border border-gray-700 p-3 text-white focus:border-neon-blue outline-none" /></div>
             </div>
             <div><label className="block text-gray-500 text-[10px] mb-1 uppercase">Client</label><input type="text" value={data.client} onChange={e => setData({...data, client: e.target.value})} className="w-full bg-[#111] border border-gray-700 p-3 text-white focus:border-neon-blue outline-none font-bold" /></div>
+            <div><label className="block text-gray-500 text-[10px] mb-1 uppercase">Adresse client</label><input type="text" value={data.adresse_client} onChange={e => setData({...data, adresse_client: e.target.value})} className="w-full bg-[#111] border border-gray-700 p-3 text-white focus:border-neon-blue outline-none" /></div>
             <div><label className="block text-neon-blue text-[10px] mb-1 uppercase">Compte Bancaire</label><input type="text" value={data.compte_bancaire} onChange={e => setData({...data, compte_bancaire: e.target.value})} className="w-full bg-[#111] border border-neon-blue text-neon-blue font-bold p-3 focus:border-white outline-none font-mono text-lg" placeholder="Ex: 5501"/></div>
             <hr className="border-gray-800"/>
             <div className="bg-gray-900/30 p-4 border border-gray-800 rounded">

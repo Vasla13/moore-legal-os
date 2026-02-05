@@ -7,6 +7,10 @@ export default function OrdonnancePreview({ data, logo }) {
 
   const d = data ?? {};
   const jugeName = safeString(d.juge, "");
+  const interdictionsList = safeString(d.interdictions, "")
+    .split("\n")
+    .map((line) => line.replace(/^[-•\u2022]\s*/, "").trim())
+    .filter(Boolean);
   // On récupère juste le nom de famille pour la signature manuscrite (ex: Pozzano)
   const signatureName = jugeName.trim().split(/\s+/).pop() || jugeName;
 
@@ -92,8 +96,16 @@ export default function OrdonnancePreview({ data, logo }) {
             </p>
 
             {/* Liste des interdictions */}
-            <div className="pl-4 text-gray-200 whitespace-pre-wrap font-sans leading-normal">
-                {safeString(d.interdictions, "")}
+            <div className="pl-4 text-gray-200 font-sans leading-normal">
+                {interdictionsList.length > 0 ? (
+                  <ul className="list-disc pl-5 space-y-1">
+                    {interdictionsList.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">Aucune interdiction renseignée.</p>
+                )}
             </div>
         </div>
       </div>

@@ -120,24 +120,6 @@ body {
   top: 25% !important;
 }
 
-[data-pdf-export] .pdf-force-color {
-  color: #00f3ff !important;
-  -webkit-text-fill-color: #00f3ff !important;
-  text-shadow: 0 0 4px rgba(0, 243, 255, 0.35);
-}
-
-.pdf-only {
-  display: none;
-}
-
-[data-pdf-export] .pdf-only {
-  display: block;
-}
-
-[data-pdf-export] .pdf-hide {
-  display: none;
-}
-
 .pdf-amount-image {
   opacity: 0;
 }

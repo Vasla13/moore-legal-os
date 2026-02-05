@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function ContratPreview({ data, logo }) {
+export default function ContratPreview({ data }) {
   const safeString = (value, fallback = "") =>
     typeof value === "string" ? value : value == null ? fallback : String(value);
   const toTitleCase = (value) => {

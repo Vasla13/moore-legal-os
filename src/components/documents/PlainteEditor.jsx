@@ -79,23 +79,22 @@ export default function PlainteEditor({ client, onClose, savedData, onSave, onHi
     // 1. Sauvegarder
     handleSave();
 
-    // 2. Historique
-    if (onHistoryAdd) {
-        onHistoryAdd(
-            "PLAINTE", 
-            data.ref_dossier, 
-            `Contre: ${data.accuse}`,
-            { ...data, pieces } // On sauvegarde tout le contenu pour pouvoir le recharger
-        );
-    }
-
-    // 3. PDF
+    // 2. PDF
     try {
       const victimeName = safeString(data.victime, "");
       await exportElementToPdf({
         elementId: 'plainte-preview',
         filename: `PLAINTE_${victimeName.replace(/\s+/g, '_')}.pdf`
       });
+      // 3. Historique (uniquement si PDF OK)
+      if (onHistoryAdd) {
+        await onHistoryAdd(
+          "PLAINTE",
+          data.ref_dossier,
+          `Contre: ${data.accuse}`,
+          { ...data, pieces } // On sauvegarde tout le contenu pour pouvoir le recharger
+        );
+      }
     } catch (err) {
       console.error(err);
       setExportError("Échec de génération du PDF. Réessaie dans quelques secondes.");
@@ -135,6 +134,11 @@ export default function PlainteEditor({ client, onClose, savedData, onSave, onHi
             <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-gray-500 text-[10px] mb-1 uppercase">Date</label><input type="text" value={data.date} onChange={e => setData({...data, date: e.target.value})} className="w-full bg-[#111] border border-gray-700 p-3 text-white focus:border-neon-blue outline-none" /></div>
                 <div><label className="block text-gray-500 text-[10px] mb-1 uppercase">Référence</label><input type="text" value={data.ref_dossier} onChange={e => setData({...data, ref_dossier: e.target.value})} className="w-full bg-[#111] border border-gray-700 p-3 text-white focus:border-neon-blue outline-none" /></div>
+            </div>
+
+            <div>
+                <label className="block text-gray-500 text-[10px] mb-1 uppercase">Avocat</label>
+                <input type="text" value={data.avocat} onChange={e => setData({...data, avocat: e.target.value})} className="w-full bg-[#111] border border-gray-700 p-3 text-white focus:border-neon-blue outline-none font-bold" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
