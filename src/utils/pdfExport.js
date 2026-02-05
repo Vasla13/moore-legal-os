@@ -56,6 +56,7 @@ export async function exportElementToPdf({
     await nextFrame();
 
     const { default: html2pdf } = await import('html2pdf.js');
+    const userOnclone = html2canvasOptions.onclone;
 
     const opt = {
       margin: 0,
@@ -70,7 +71,42 @@ export async function exportElementToPdf({
         scrollY: -window.scrollY,
         windowWidth: element.scrollWidth,
         windowHeight: element.scrollHeight,
-        ...html2canvasOptions
+        ...html2canvasOptions,
+        onclone: (doc) => {
+          const amountNodes = doc.querySelectorAll('[data-pdf-amount-value]');
+          amountNodes.forEach((node) => {
+            const title = node.getAttribute('data-pdf-amount-title') || '';
+            const value = node.getAttribute('data-pdf-amount-value') || '';
+            const canvas = doc.createElement('canvas');
+            canvas.width = 160;
+            canvas.height = 56;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillStyle = '#9ca3af';
+              ctx.font = '10px "Share Tech Mono", monospace';
+              ctx.fillText(title.toUpperCase(), canvas.width / 2, 18);
+              ctx.fillStyle = '#00f3ff';
+              ctx.font = '20px "Share Tech Mono", monospace';
+              ctx.fillText(value, canvas.width / 2, 40);
+            }
+
+            const img = doc.createElement('img');
+            img.src = canvas.toDataURL('image/png');
+            img.width = 160;
+            img.height = 56;
+            img.style.display = 'block';
+            img.style.margin = '0 auto';
+            node.innerHTML = '';
+            node.appendChild(img);
+          });
+
+          if (typeof userOnclone === 'function') {
+            userOnclone(doc);
+          }
+        },
       },
       jsPDF: {
         unit: 'mm',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 export default function FacturePreview({ data, items, sousTotal, montantFrais, totalFinal }) {
   const safeString = (value, fallback = "") =>
@@ -8,6 +8,47 @@ export default function FacturePreview({ data, items, sousTotal, montantFrais, t
   const safeMontantFrais = Number.isFinite(montantFrais) ? montantFrais : 0;
   const safeTotalFinal = Number.isFinite(totalFinal) ? totalFinal : 0;
   const d = data ?? {};
+  const montantText = `${safeTotalFinal.toFixed(2)} $`;
+
+  const [montantPng, setMontantPng] = useState("");
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    let active = true;
+    const render = () => {
+      const scale = 2;
+      const width = 160;
+      const height = 56;
+      const canvas = document.createElement('canvas');
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.scale(scale, scale);
+      ctx.clearRect(0, 0, width, height);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '10px "Rajdhani", sans-serif';
+      ctx.fillText('MONTANT DU', width / 2, 18);
+      ctx.fillStyle = '#00f3ff';
+      ctx.font = '20px "Orbitron", sans-serif';
+      ctx.fillText(montantText, width / 2, 40);
+      if (active) {
+        setMontantPng(canvas.toDataURL('image/png'));
+      }
+    };
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(render).catch(render);
+    } else {
+      render();
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [montantText]);
 
   return (
     <div 
@@ -46,9 +87,22 @@ export default function FacturePreview({ data, items, sousTotal, montantFrais, t
             <p className="text-sm text-gray-400 font-mono">{safeString(d.adresse_client, "")}</p>
         </div>
         <div className="w-1/2 text-right">
-             <div className="inline-block bg-gray-900 border border-gray-700 p-4 rounded text-center min-w-[150px]">
-                <p className="text-xs text-gray-500 uppercase">MONTANT DU</p>
-                <p className="text-2xl font-bold text-neon-blue font-orbitron">{safeTotalFinal.toFixed(2)} $</p>
+             <div className="relative inline-block bg-gray-900 border border-gray-700 p-4 rounded text-center min-w-[150px] min-h-[56px]">
+                <div className="pdf-amount-text">
+                  <p className="text-xs text-gray-500 uppercase">MONTANT DU</p>
+                  <p className="text-2xl font-bold text-neon-blue font-orbitron">
+                    {montantText}
+                  </p>
+                </div>
+                {montantPng && (
+                  <img
+                    src={montantPng}
+                    alt="Montant du"
+                    className="pdf-amount-image absolute inset-0 m-auto"
+                    width={160}
+                    height={56}
+                  />
+                )}
              </div>
         </div>
       </div>

@@ -3,9 +3,33 @@ import React from 'react';
 export default function ContratPreview({ data, logo }) {
   const safeString = (value, fallback = "") =>
     typeof value === "string" ? value : value == null ? fallback : String(value);
+  const toTitleCase = (value) => {
+    const clean = safeString(value, "").trim();
+    if (!clean) return "";
+    const capitalize = (part) =>
+      part ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase() : "";
+
+    return clean
+      .split(/\s+/)
+      .map((word) =>
+        word
+          .split("-")
+          .map((segment) =>
+            segment
+              .split("'")
+              .map((sub) => capitalize(sub))
+              .join("'")
+          )
+          .join("-")
+      )
+      .join(" ");
+  };
   const d = data ?? {};
   const avocatName = safeString(d.avocat, "");
   const avocatSignature = avocatName.trim().split(/\s+/).pop() || avocatName;
+  const clientName = safeString(d.client, "");
+  const clientSignature = safeString(d.signature_client, clientName);
+  const clientSignatureDisplay = toTitleCase(clientSignature) || toTitleCase(clientName);
 
   return (
     <div 
@@ -22,7 +46,7 @@ export default function ContratPreview({ data, logo }) {
       <div className="absolute bottom-0 left-0 w-full h-1 bg-neon-blue opacity-50"></div>
 
       {/* --- EN-TÊTE --- */}
-      <div className="flex justify-between items-end mb-12 border-b border-gray-800 pb-6 relative z-10">
+      <div className="flex justify-between items-end mb-12 border-b border-gray-800 pb-6 relative z-10 pdf-contract-header">
          <div>
              <h1 className="text-3xl font-orbitron font-bold tracking-widest text-white uppercase">
                 MOORE <span className="text-neon-blue">LEGAL</span>
@@ -38,14 +62,14 @@ export default function ContratPreview({ data, logo }) {
       </div>
 
       {/* --- TITRE --- */}
-      <div className="mb-10 text-center relative z-10">
+      <div className="mb-10 text-center relative z-10 pdf-contract-title">
         <h2 className="text-2xl font-bold font-orbitron border-2 border-neon-blue px-6 py-2 inline-block tracking-wide uppercase">
             CONTRAT DE MANDAT DE DÉFENSE
         </h2>
       </div>
 
       {/* --- CORPS DU CONTRAT --- */}
-      <div className="flex-1 text-justify font-sans text-sm leading-relaxed relative z-10 text-gray-200 flex flex-col gap-6">
+      <div className="flex-1 text-justify font-sans text-sm leading-relaxed relative z-10 text-gray-200 flex flex-col gap-6 pdf-contract-body">
         
         {/* Les Parties */}
         <div className="bg-gray-900/30 p-4 border-l-2 border-neon-blue">
@@ -99,14 +123,14 @@ export default function ContratPreview({ data, logo }) {
       </div>
 
       {/* --- SIGNATURES --- */}
-      <div className="mt-auto pt-6 pb-12 relative z-10 border-t border-gray-800 break-inside-avoid">
+      <div className="mt-auto pt-6 pb-12 relative z-10 border-t border-gray-800 break-inside-avoid pdf-contract-footer">
         <div className="flex justify-between items-start px-8">
             
             {/* Signature Avocat */}
             <div className="text-center w-48">
                 <p className="font-orbitron text-xs font-bold text-neon-blue mb-4">POUR LE CABINET</p>
                 <div className="relative h-24 w-full border-b border-gray-600 flex items-end justify-center pb-1 overflow-visible">
-                    <span className="font-signature text-neon-blue text-4xl -rotate-6 origin-bottom-left inline-block leading-none">
+                    <span className="font-signature pdf-signature text-neon-blue text-4xl -rotate-6 origin-bottom-left inline-block leading-none">
                         {avocatSignature}
                     </span>
                 </div>
@@ -117,9 +141,18 @@ export default function ContratPreview({ data, logo }) {
             <div className="text-center w-48">
                 <p className="font-orbitron text-xs font-bold text-white mb-4">LE CLIENT</p>
                 <div className="relative h-24 w-full border-b border-gray-600 flex items-end justify-center pb-1 overflow-visible">
-                     <p className="text-gray-600 text-[10px] uppercase tracking-widest opacity-50 mb-2">SIGNATURE REQUISE</p>
+                    {clientSignatureDisplay ? (
+                      <span className="font-signature pdf-signature text-white text-4xl -rotate-6 origin-bottom-left inline-block leading-none">
+                        {clientSignatureDisplay}
+                      </span>
+                    ) : (
+                      <p className="text-gray-600 text-[10px] uppercase tracking-widest opacity-50 mb-2">SIGNATURE REQUISE</p>
+                    )}
                 </div>
                 <p className="text-[10px] uppercase mt-1 text-gray-500">LU ET APPROUVÉ</p>
+                {clientName && (
+                  <p className="text-[10px] uppercase mt-0.5 text-gray-500">{clientName}</p>
+                )}
             </div>
 
         </div>

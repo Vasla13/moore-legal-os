@@ -124,9 +124,11 @@ export default function OrdonnancePreview({ data, logo }) {
                     </p>
                     
                     {/* Signature manuscrite par dessus (plus grande) */}
-                    <span className="font-signature text-neon-blue text-7xl -rotate-12 origin-bottom-left inline-block leading-none drop-shadow-[0_0_5px_#00f3ff] z-10 mix-blend-screen absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                        {signatureName}
-                    </span>
+                    <div className="absolute inset-x-0 top-[45%] -translate-y-1/2 flex justify-center pointer-events-none pdf-only-raise-signature">
+                        <span className="font-signature pdf-signature text-neon-blue text-7xl -rotate-12 origin-bottom-left inline-block leading-none drop-shadow-[0_0_5px_#00f3ff] z-10 mix-blend-screen">
+                            {signatureName}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

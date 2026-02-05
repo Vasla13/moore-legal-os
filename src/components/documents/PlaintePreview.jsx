@@ -140,7 +140,7 @@ export default function PlaintePreview({ data, pieces }) {
         <div className="text-center w-48">
             <p className="font-orbitron text-xs font-bold text-neon-blue mb-4">L'AVOCAT REQUÉRANT</p>
             <div className="relative h-20 w-full border-b border-gray-600 flex items-end justify-center pb-1 overflow-visible">
-                <span className="font-signature text-white text-3xl -rotate-6 origin-bottom-left inline-block leading-none">
+                <span className="font-signature pdf-signature text-white text-3xl -rotate-6 origin-bottom-left inline-block leading-none">
                     {safeString(d.avocat, "").trim().split(/\s+/).pop() || safeString(d.avocat, "")}
                 </span>
             </div>

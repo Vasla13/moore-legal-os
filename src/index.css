@@ -92,3 +92,60 @@ body {
 [data-pdf-export] .mix-blend-screen {
   mix-blend-mode: normal !important;
 }
+
+[data-pdf-export] .pdf-signature {
+  position: relative;
+  top: -12px;
+}
+
+[data-pdf-export] #contrat-preview .pdf-contract-header {
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+}
+
+[data-pdf-export] #contrat-preview .pdf-contract-title {
+  margin-bottom: 20px;
+}
+
+[data-pdf-export] #contrat-preview .pdf-contract-body {
+  gap: 16px;
+}
+
+[data-pdf-export] #contrat-preview .pdf-contract-footer {
+  padding-top: 12px;
+  padding-bottom: 18px;
+}
+
+[data-pdf-export] .pdf-only-raise-signature {
+  top: 25% !important;
+}
+
+[data-pdf-export] .pdf-force-color {
+  color: #00f3ff !important;
+  -webkit-text-fill-color: #00f3ff !important;
+  text-shadow: 0 0 4px rgba(0, 243, 255, 0.35);
+}
+
+.pdf-only {
+  display: none;
+}
+
+[data-pdf-export] .pdf-only {
+  display: block;
+}
+
+[data-pdf-export] .pdf-hide {
+  display: none;
+}
+
+.pdf-amount-image {
+  opacity: 0;
+}
+
+[data-pdf-export] .pdf-amount-image {
+  opacity: 1;
+}
+
+[data-pdf-export] .pdf-amount-text {
+  opacity: 0;
+}
