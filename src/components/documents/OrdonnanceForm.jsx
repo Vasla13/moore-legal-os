@@ -1,7 +1,7 @@
 import React from 'react';
-import { Upload, Download } from 'lucide-react';
+import { Upload, Download, Loader2 } from 'lucide-react';
 
-export default function OrdonnanceForm({ data, setData, logo, handleImageUpload, onDownload }) {
+export default function OrdonnanceForm({ data, setData, logo, handleImageUpload, onDownload, isExporting }) {
   return (
     <div className="w-1/3 border-r border-gray-800 p-6 overflow-y-auto custom-scrollbar bg-[#050505]">
       
@@ -77,8 +77,13 @@ export default function OrdonnanceForm({ data, setData, logo, handleImageUpload,
         </div>
       </div>
 
-      <button onClick={onDownload} className="w-full py-3 bg-neon-blue text-black font-orbitron font-bold flex justify-center gap-2 hover:bg-white transition-colors mt-6 shadow-[0_0_20px_rgba(0,243,255,0.3)]">
-        <Download size={18} /> GÉNÉRER LE PDF
+      <button
+        onClick={onDownload}
+        disabled={isExporting}
+        className={`w-full py-3 bg-neon-blue text-black font-orbitron font-bold flex justify-center gap-2 transition-colors mt-6 shadow-[0_0_20px_rgba(0,243,255,0.3)] ${isExporting ? 'opacity-70 cursor-wait' : 'hover:bg-white'}`}
+      >
+        {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+        {isExporting ? 'GÉNÉRATION...' : 'GÉNÉRER LE PDF'}
       </button>
     </div>
   );

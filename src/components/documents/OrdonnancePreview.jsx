@@ -117,14 +117,14 @@ export default function OrdonnancePreview({ data, logo }) {
                     JUDGE OF SAN ANDREAS
                 </p>
                 
-                <div className="relative h-24 w-full flex items-center justify-center">
+                <div className="relative h-28 w-full flex items-end justify-center overflow-visible">
                     {/* Nom imprimé en bas */}
                     <p className="absolute bottom-0 text-sm font-bold uppercase tracking-wider text-white border-t border-gray-600 pt-1 w-full">
                         {jugeName}
                     </p>
                     
                     {/* Signature manuscrite par dessus (plus grande) */}
-                    <span className="font-signature text-neon-blue text-7xl -rotate-12 block drop-shadow-[0_0_5px_#00f3ff] z-10 mix-blend-screen absolute -top-2">
+                    <span className="font-signature text-neon-blue text-7xl -rotate-12 origin-bottom-left inline-block leading-none drop-shadow-[0_0_5px_#00f3ff] z-10 mix-blend-screen absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
                         {signatureName}
                     </span>
                 </div>

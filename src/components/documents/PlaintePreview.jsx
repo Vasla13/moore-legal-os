@@ -132,15 +132,17 @@ export default function PlaintePreview({ data, pieces }) {
       </div>
 
       {/* --- PIED DE PAGE --- */}
-      <div className="mt-auto pt-6 border-t border-gray-800 relative z-10 flex justify-between items-end">
+      <div className="mt-auto pt-6 border-t border-gray-800 relative z-10 flex justify-between items-end break-inside-avoid">
         <p className="text-[10px] text-gray-600 w-1/2">
             Ce document est une pièce officielle de procédure. Toute fausse déclaration est passible de poursuites (Parjure).
         </p>
 
         <div className="text-center w-48">
             <p className="font-orbitron text-xs font-bold text-neon-blue mb-4">L'AVOCAT REQUÉRANT</p>
-            <div className="relative h-16 w-full border-b border-gray-600 flex items-end justify-center pb-1">
-                <span className="font-signature text-white text-3xl -rotate-6">{safeString(d.avocat, "").trim().split(/\s+/).pop() || safeString(d.avocat, "")}</span>
+            <div className="relative h-20 w-full border-b border-gray-600 flex items-end justify-center pb-1 overflow-visible">
+                <span className="font-signature text-white text-3xl -rotate-6 origin-bottom-left inline-block leading-none">
+                    {safeString(d.avocat, "").trim().split(/\s+/).pop() || safeString(d.avocat, "")}
+                </span>
             </div>
             <p className="text-[10px] uppercase mt-1 text-gray-500">{safeString(d.avocat, "")}</p>
         </div>

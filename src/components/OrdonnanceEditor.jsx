@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save, Loader2 } from 'lucide-react';
 import OrdonnanceForm from './documents/OrdonnanceForm';
 import OrdonnancePreview from './documents/OrdonnancePreview';
+import { exportElementToPdf } from '../utils/pdfExport';
 
 export default function OrdonnanceEditor({ client, onClose, savedData, onSave, onHistoryAdd }) {
   const safeString = (value, fallback = "") =>
     typeof value === "string" ? value : value == null ? fallback : String(value);
   const [logo, setLogo] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   
   const defaultData = {
     date: new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }),
@@ -44,6 +47,10 @@ export default function OrdonnanceEditor({ client, onClose, savedData, onSave, o
   };
 
   const handleDownloadPDF = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    setExportError("");
+
     // 1. Sauvegarde
     handleSave();
 
@@ -58,33 +65,57 @@ export default function OrdonnanceEditor({ client, onClose, savedData, onSave, o
     }
 
     // 3. PDF
-    const element = document.getElementById('document-preview');
-    if (!element) return;
-    const { default: html2pdf } = await import('html2pdf.js');
-    const accuseName = safeString(data.accuse, "");
-    const opt = {
-      margin: 0,
-      filename: `ORDONNANCE_${accuseName.replace(/ /g, '_')}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#000000', logging: false },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save();
+    try {
+      const accuseName = safeString(data.accuse, "");
+      await exportElementToPdf({
+        elementId: 'document-preview',
+        filename: `ORDONNANCE_${accuseName.replace(/\s+/g, '_')}.pdf`
+      });
+    } catch (err) {
+      console.error(err);
+      setExportError("Échec de génération du PDF. Réessaie dans quelques secondes.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex bg-black/95 backdrop-blur-md overflow-hidden animate-[fadeIn_0.2s_ease-out]">
       <div className="absolute top-4 right-4 z-50 flex gap-2">
-         <button onClick={handleSave} className="bg-black border border-green-700 text-green-500 p-2 rounded-full hover:bg-green-500 hover:text-black transition-all"><Save size={24} /></button>
-         <button onClick={onClose} className="bg-black border border-gray-700 p-2 rounded-full text-white hover:text-red-500 hover:border-red-500 transition-all"><X size={24} /></button>
+         <button
+           onClick={handleSave}
+           disabled={isExporting}
+           className={`bg-black border border-green-700 text-green-500 p-2 rounded-full transition-all ${isExporting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-500 hover:text-black'}`}
+         >
+           <Save size={24} />
+         </button>
+         <button
+           onClick={onClose}
+           disabled={isExporting}
+           className={`bg-black border border-gray-700 p-2 rounded-full text-white transition-all ${isExporting ? 'opacity-50 cursor-not-allowed' : 'hover:text-red-500 hover:border-red-500'}`}
+         >
+           <X size={24} />
+         </button>
       </div>
 
       <OrdonnanceForm 
         data={data} setData={setData} logo={logo} handleImageUpload={handleImageUpload} 
-        onDownload={handleDownloadPDF} 
+        onDownload={handleDownloadPDF}
+        isExporting={isExporting}
       />
+      {exportError && (
+        <div className="absolute left-1/2 top-4 -translate-x-1/2 z-50 bg-red-500/20 text-red-400 border border-red-500/40 px-4 py-2 text-xs font-mono uppercase tracking-widest">
+          {exportError}
+        </div>
+      )}
 
-      <div className="w-2/3 bg-[#151515] flex justify-center overflow-y-auto p-10">
+      <div className="relative w-2/3 bg-[#151515] flex justify-center overflow-y-auto p-10">
+        {isExporting && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/70 text-neon-blue font-mono text-xs uppercase tracking-widest gap-2">
+            <Loader2 size={20} className="animate-spin" />
+            Préparation du PDF...
+          </div>
+        )}
         <OrdonnancePreview data={data} logo={logo} />
       </div>
     </div>

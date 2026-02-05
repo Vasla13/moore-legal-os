@@ -99,14 +99,16 @@ export default function ContratPreview({ data, logo }) {
       </div>
 
       {/* --- SIGNATURES --- */}
-      <div className="mt-auto pt-6 pb-12 relative z-10 border-t border-gray-800">
+      <div className="mt-auto pt-6 pb-12 relative z-10 border-t border-gray-800 break-inside-avoid">
         <div className="flex justify-between items-start px-8">
             
             {/* Signature Avocat */}
             <div className="text-center w-48">
                 <p className="font-orbitron text-xs font-bold text-neon-blue mb-4">POUR LE CABINET</p>
-                <div className="relative h-20 w-full border-b border-gray-600 flex items-end justify-center pb-2">
-                    <span className="font-signature text-neon-blue text-4xl -rotate-6">{avocatSignature}</span>
+                <div className="relative h-24 w-full border-b border-gray-600 flex items-end justify-center pb-1 overflow-visible">
+                    <span className="font-signature text-neon-blue text-4xl -rotate-6 origin-bottom-left inline-block leading-none">
+                        {avocatSignature}
+                    </span>
                 </div>
                 <p className="text-[10px] uppercase mt-1 text-gray-500">{avocatName}</p>
             </div>
@@ -114,7 +116,7 @@ export default function ContratPreview({ data, logo }) {
             {/* Signature Client */}
             <div className="text-center w-48">
                 <p className="font-orbitron text-xs font-bold text-white mb-4">LE CLIENT</p>
-                <div className="relative h-20 w-full border-b border-gray-600 flex items-end justify-center pb-2">
+                <div className="relative h-24 w-full border-b border-gray-600 flex items-end justify-center pb-1 overflow-visible">
                      <p className="text-gray-600 text-[10px] uppercase tracking-widest opacity-50 mb-2">SIGNATURE REQUISE</p>
                 </div>
                 <p className="text-[10px] uppercase mt-1 text-gray-500">LU ET APPROUVÉ</p>

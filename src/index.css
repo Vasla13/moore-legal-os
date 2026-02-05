@@ -82,3 +82,13 @@ body {
 .font-signature {
   font-family: 'Mrs Saint Delafield', cursive;
 }
+
+/* --- EXPORT PDF --- */
+[data-pdf-export] {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+[data-pdf-export] .mix-blend-screen {
+  mix-blend-mode: normal !important;
+}

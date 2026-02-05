@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Download, Plus, Trash2, Image as ImageIcon, Save } from 'lucide-react';
+import { X, Download, Plus, Trash2, Image as ImageIcon, Save, Loader2 } from 'lucide-react';
 import PlaintePreview from './PlaintePreview';
+import { exportElementToPdf } from '../../utils/pdfExport';
 
 export default function PlainteEditor({ client, onClose, savedData, onSave, onHistoryAdd }) {
   const safeString = (value, fallback = "") =>
@@ -20,6 +21,8 @@ export default function PlainteEditor({ client, onClose, savedData, onSave, onHi
   };
 
   const [data, setData] = useState(defaultData);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   
   // Pièces par défaut (Vide ou exemple générique)
   const [pieces, setPieces] = useState([
@@ -69,6 +72,10 @@ export default function PlainteEditor({ client, onClose, savedData, onSave, onHi
 
   // --- GÉNÉRATION PDF & HISTORIQUE ---
   const handleDownloadPDF = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    setExportError("");
+
     // 1. Sauvegarder
     handleSave();
 
@@ -83,18 +90,18 @@ export default function PlainteEditor({ client, onClose, savedData, onSave, onHi
     }
 
     // 3. PDF
-    const element = document.getElementById('plainte-preview');
-    if (!element) return;
-    const { default: html2pdf } = await import('html2pdf.js');
-    const victimeName = safeString(data.victime, "");
-    const opt = {
-      margin: 0,
-      filename: `PLAINTE_${victimeName.replace(/ /g, '_')}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#000000', logging: false },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save();
+    try {
+      const victimeName = safeString(data.victime, "");
+      await exportElementToPdf({
+        elementId: 'plainte-preview',
+        filename: `PLAINTE_${victimeName.replace(/\s+/g, '_')}.pdf`
+      });
+    } catch (err) {
+      console.error(err);
+      setExportError("Échec de génération du PDF. Réessaie dans quelques secondes.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -102,8 +109,21 @@ export default function PlainteEditor({ client, onClose, savedData, onSave, onHi
       
       {/* Header Boutons */}
       <div className="absolute top-4 right-4 z-50 flex gap-2">
-         <button onClick={handleSave} className="bg-black border border-green-700 text-green-500 p-2 rounded-full hover:bg-green-500 hover:text-black transition-all" title="Sauvegarder"><Save size={24} /></button>
-         <button onClick={onClose} className="bg-black border border-gray-700 p-2 rounded-full text-white hover:text-red-500 hover:border-red-500 transition-all"><X size={24} /></button>
+         <button
+           onClick={handleSave}
+           disabled={isExporting}
+           className={`bg-black border border-green-700 text-green-500 p-2 rounded-full transition-all ${isExporting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-500 hover:text-black'}`}
+           title="Sauvegarder"
+         >
+           <Save size={24} />
+         </button>
+         <button
+           onClick={onClose}
+           disabled={isExporting}
+           className={`bg-black border border-gray-700 p-2 rounded-full text-white transition-all ${isExporting ? 'opacity-50 cursor-not-allowed' : 'hover:text-red-500 hover:border-red-500'}`}
+         >
+           <X size={24} />
+         </button>
       </div>
 
       {/* --- COLONNE GAUCHE : FORMULAIRE --- */}
@@ -168,14 +188,25 @@ export default function PlainteEditor({ client, onClose, savedData, onSave, onHi
                 </div>
             </div>
 
-            <button onClick={handleDownloadPDF} className="w-full py-4 bg-neon-blue text-black font-orbitron font-bold flex justify-center gap-2 hover:bg-white transition-colors mt-8 shadow-[0_0_20px_rgba(0,243,255,0.3)]">
-                <Download size={20} /> ÉMETTRE LA PLAINTE
+            <button
+              onClick={handleDownloadPDF}
+              disabled={isExporting}
+              className={`w-full py-4 bg-neon-blue text-black font-orbitron font-bold flex justify-center gap-2 transition-colors mt-8 shadow-[0_0_20px_rgba(0,243,255,0.3)] ${isExporting ? 'opacity-70 cursor-wait' : 'hover:bg-white'}`}
+            >
+                {isExporting ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
+                {isExporting ? 'GÉNÉRATION DU PDF...' : 'ÉMETTRE LA PLAINTE'}
             </button>
+            {exportError && <p className="text-red-500 text-xs font-mono mt-3">{exportError}</p>}
         </div>
       </div>
 
       {/* --- COLONNE DROITE : APERÇU --- */}
-      <div className="w-2/3 bg-[#151515] flex justify-center overflow-y-auto p-10">
+      <div className="relative w-2/3 bg-[#151515] flex justify-center overflow-y-auto p-10">
+        {isExporting && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70 text-neon-blue font-mono text-xs uppercase tracking-widest">
+            Préparation du PDF...
+          </div>
+        )}
         <PlaintePreview data={data} pieces={pieces} />
       </div>
 
