@@ -23,7 +23,10 @@ export default function OrdonnanceEditor({ client, onClose, savedData, onSave, o
   const [data, setData] = useState(defaultData);
 
   useEffect(() => {
-    if (savedData) setData(savedData);
+    if (savedData) {
+      setData(savedData);
+      if (savedData.logo) setLogo(savedData.logo);
+    }
   }, [savedData]);
 
   const handleImageUpload = (e) => {
@@ -45,7 +48,12 @@ export default function OrdonnanceEditor({ client, onClose, savedData, onSave, o
 
     // 2. Historique (NOUVEAU)
     if (onHistoryAdd) {
-        onHistoryAdd("ORDONNANCE", `CASE-${client?.id?.substring(0,4)}`, `Mesure éloignement`);
+        onHistoryAdd(
+          "ORDONNANCE",
+          `CASE-${client?.id?.substring(0,4)}`,
+          "Mesure éloignement",
+          { ...data, logo: logo }
+        );
     }
 
     // 3. PDF

@@ -15,6 +15,7 @@ export default {
       fontFamily: {
         'orbitron': ['"Orbitron"', 'sans-serif'],
         'mono': ['"Share Tech Mono"', 'monospace'],
+        'rajdhani': ['"Rajdhani"', 'sans-serif'],
       },
     },
   },

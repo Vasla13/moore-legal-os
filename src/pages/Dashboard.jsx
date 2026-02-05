@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from "firebase/auth";
-import { collection, getDocs, addDoc, query } from "firebase/firestore";
+import { collection, getDocs, addDoc, query, serverTimestamp } from "firebase/firestore";
 import { auth, db } from '../firebase';
 import { LogOut, Plus, FileText, User, FolderOpen, X, Fingerprint, Activity, Building2, Users } from 'lucide-react';
 import Layout from '../components/layout/Layout';
@@ -19,13 +19,27 @@ export default function Dashboard() {
 
   const handleLogout = () => signOut(auth);
 
+  const getCreatedAtMs = (value) => {
+    if (!value) return 0;
+    if (typeof value.toMillis === "function") return value.toMillis();
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
   const fetchDossiers = async () => {
     setLoading(true);
     try {
       const q = query(collection(db, "clients")); 
       const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const data = querySnapshot.docs.map(doc => {
+        const payload = doc.data();
+        return {
+          id: doc.id,
+          ...payload,
+          createdAtMs: getCreatedAtMs(payload.createdAt),
+        };
+      });
+      data.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
       setDossiers(data);
     } catch (error) { console.error("Erreur système:", error); }
     setLoading(false);
@@ -41,7 +55,7 @@ export default function Dashboard() {
         type: clientType,
         infraction: "OUVERTURE DU DOSSIER",
         statut: "Instruction",
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
         notes: "",
         telephone: ""
       });
