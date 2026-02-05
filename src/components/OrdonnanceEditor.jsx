@@ -4,6 +4,8 @@ import OrdonnanceForm from './documents/OrdonnanceForm';
 import OrdonnancePreview from './documents/OrdonnancePreview';
 
 export default function OrdonnanceEditor({ client, onClose, savedData, onSave, onHistoryAdd }) {
+  const safeString = (value, fallback = "") =>
+    typeof value === "string" ? value : value == null ? fallback : String(value);
   const [logo, setLogo] = useState(null);
   
   const defaultData = {
@@ -59,9 +61,10 @@ export default function OrdonnanceEditor({ client, onClose, savedData, onSave, o
     const element = document.getElementById('document-preview');
     if (!element) return;
     const { default: html2pdf } = await import('html2pdf.js');
+    const accuseName = safeString(data.accuse, "");
     const opt = {
       margin: 0,
-      filename: `ORDONNANCE_${data.accuse.replace(/ /g, '_')}.pdf`,
+      filename: `ORDONNANCE_${accuseName.replace(/ /g, '_')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, backgroundColor: '#000000', logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }

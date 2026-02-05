@@ -3,6 +3,8 @@ import { X, Download, Plus, Trash2, Save } from 'lucide-react';
 import FacturePreview from './FacturePreview';
 
 export default function FactureEditor({ client, onClose, savedData, onSave, onHistoryAdd }) {
+  const safeString = (value, fallback = "") =>
+    typeof value === "string" ? value : value == null ? fallback : String(value);
   
   const defaultData = {
     date: new Date().toLocaleDateString('fr-FR'),
@@ -64,9 +66,10 @@ export default function FactureEditor({ client, onClose, savedData, onSave, onHi
     const element = document.getElementById('facture-preview');
     if (!element) return;
     const { default: html2pdf } = await import('html2pdf.js');
+    const factureRef = safeString(data.ref_facture, "FACTURE");
     const opt = {
       margin: 0,
-      filename: `FACTURE_${data.ref_facture}.pdf`,
+      filename: `FACTURE_${factureRef}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, backgroundColor: '#000000', logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }

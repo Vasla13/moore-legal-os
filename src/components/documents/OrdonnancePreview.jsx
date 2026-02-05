@@ -1,8 +1,14 @@
 import React from 'react';
 
 export default function OrdonnancePreview({ data, logo }) {
+  const safeString = (value, fallback = "") =>
+    typeof value === "string" ? value : value == null ? fallback : String(value);
+  const safeUpper = (value, fallback = "") => safeString(value, fallback).toUpperCase();
+
+  const d = data ?? {};
+  const jugeName = safeString(d.juge, "");
   // On récupère juste le nom de famille pour la signature manuscrite (ex: Pozzano)
-  const signatureName = data.juge.split(" ").pop() || data.juge;
+  const signatureName = jugeName.trim().split(/\s+/).pop() || jugeName;
 
   return (
     <div 
@@ -38,7 +44,7 @@ export default function OrdonnancePreview({ data, logo }) {
          <div className="w-1/3 h-px bg-gradient-to-r from-transparent via-neon-blue to-transparent mt-3 mb-6"></div>
 
          <p className="w-full text-right font-mono text-sm text-gray-300">
-            Los Santos, le {data.date}
+            Los Santos, le {safeString(d.date, "")}
          </p>
       </div>
 
@@ -55,16 +61,16 @@ export default function OrdonnancePreview({ data, logo }) {
         
         {/* Les Motifs */}
         <div>
-            <p>Vu la requête formulée par <span className="font-bold">{data.avocat}</span>,</p>
-            <p>{data.titre_faits}</p>
+            <p>Vu la requête formulée par <span className="font-bold">{safeString(d.avocat, "")}</span>,</p>
+            <p>{safeString(d.titre_faits, "")}</p>
         </div>
         
         <div>
             <p>
-                Considérant que <span className="font-bold text-neon-blue">{data.victime.toUpperCase()}</span> a été menacé(e) par 
-                <span className="font-bold text-red-500"> {data.accuse.toUpperCase()}</span>,
+                Considérant que <span className="font-bold text-neon-blue">{safeUpper(d.victime, "")}</span> a été menacé(e) par 
+                <span className="font-bold text-red-500"> {safeUpper(d.accuse, "")}</span>,
             </p>
-            <p>{data.titre_considerant}</p>
+            <p>{safeString(d.titre_considerant, "")}</p>
         </div>
 
         {/* La Décision */}
@@ -78,16 +84,16 @@ export default function OrdonnancePreview({ data, logo }) {
         {/* Le Bloc Gris des mesures */}
         <div className="bg-gray-900/40 p-5 border-l-4 border-neon-blue">
             <p className="mb-3">
-                <span className="font-bold text-white">{data.accuse}</span> {data.decision_texte} (Durée : <span className="font-bold text-white">{data.duree}</span>).
+                <span className="font-bold text-white">{safeString(d.accuse, "")}</span> {safeString(d.decision_texte, "")} (Durée : <span className="font-bold text-white">{safeString(d.duree, "")}</span>).
             </p>
 
             <p className="mb-2">
-                Durant toute la durée de la mesure, <span className="font-bold text-white">{data.accuse}</span> n’est pas autorisé à :
+                Durant toute la durée de la mesure, <span className="font-bold text-white">{safeString(d.accuse, "")}</span> n’est pas autorisé à :
             </p>
 
             {/* Liste des interdictions */}
             <div className="pl-4 text-gray-200 whitespace-pre-wrap font-sans leading-normal">
-                {data.interdictions}
+                {safeString(d.interdictions, "")}
             </div>
         </div>
       </div>
@@ -114,7 +120,7 @@ export default function OrdonnancePreview({ data, logo }) {
                 <div className="relative h-24 w-full flex items-center justify-center">
                     {/* Nom imprimé en bas */}
                     <p className="absolute bottom-0 text-sm font-bold uppercase tracking-wider text-white border-t border-gray-600 pt-1 w-full">
-                        {data.juge}
+                        {jugeName}
                     </p>
                     
                     {/* Signature manuscrite par dessus (plus grande) */}

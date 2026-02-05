@@ -1,6 +1,12 @@
 import React from 'react';
 
 export default function ContratPreview({ data, logo }) {
+  const safeString = (value, fallback = "") =>
+    typeof value === "string" ? value : value == null ? fallback : String(value);
+  const d = data ?? {};
+  const avocatName = safeString(d.avocat, "");
+  const avocatSignature = avocatName.trim().split(/\s+/).pop() || avocatName;
+
   return (
     <div 
       id="contrat-preview" 
@@ -26,8 +32,8 @@ export default function ContratPreview({ data, logo }) {
              </p>
          </div>
          <div className="text-right">
-             <p className="font-mono text-sm text-gray-400">Réf. Dossier: {data.ref_dossier}</p>
-             <p className="font-mono text-sm text-gray-400">Date: {data.date}</p>
+             <p className="font-mono text-sm text-gray-400">Réf. Dossier: {safeString(d.ref_dossier, "")}</p>
+             <p className="font-mono text-sm text-gray-400">Date: {safeString(d.date, "")}</p>
          </div>
       </div>
 
@@ -45,12 +51,12 @@ export default function ContratPreview({ data, logo }) {
         <div className="bg-gray-900/30 p-4 border-l-2 border-neon-blue">
             <p className="mb-2"><span className="font-bold text-neon-blue uppercase">ENTRE :</span></p>
             <p className="pl-4 mb-2">
-                Le Cabinet <span className="font-bold">MOORE LEGAL</span>, représenté par <span className="font-bold">{data.avocat}</span>, Avocat au Barreau de San Andreas.
+                Le Cabinet <span className="font-bold">MOORE LEGAL</span>, représenté par <span className="font-bold">{avocatName}</span>, Avocat au Barreau de San Andreas.
                 <br/><span className="text-gray-500 text-xs italic">(Ci-après désigné "L'Avocat")</span>
             </p>
             <p className="mb-2"><span className="font-bold text-neon-blue uppercase">ET :</span></p>
             <p className="pl-4">
-                M./Mme <span className="font-bold uppercase text-white">{data.client}</span>.
+                M./Mme <span className="font-bold uppercase text-white">{safeString(d.client, "")}</span>.
                 <br/><span className="text-gray-500 text-xs italic">(Ci-après désigné "Le Client")</span>
             </p>
         </div>
@@ -60,7 +66,7 @@ export default function ContratPreview({ data, logo }) {
             <h3 className="font-bold font-orbitron text-neon-blue mb-1">ARTICLE 1 : OBJET DU MANDAT</h3>
             <p>
                 Le Client charge l'Avocat d'assurer la défense de ses intérêts dans le cadre de la procédure suivante :<br/>
-                <span className="italic text-white">"{data.objet}"</span>.
+                <span className="italic text-white">"{safeString(d.objet, "")}"</span>.
             </p>
             <p className="mt-1">
                 L'Avocat s'engage à mettre en œuvre toutes les diligences nécessaires (garde à vue, instruction, plaidoirie).
@@ -74,10 +80,10 @@ export default function ContratPreview({ data, logo }) {
                 En contrepartie de la mission, le Client s'engage à verser des honoraires fixés forfaitairement à :
             </p>
             <div className="text-center py-4 my-2 border border-dashed border-gray-700 bg-gray-900/50">
-                <span className="text-3xl font-bold font-orbitron text-white">{data.montant} $</span>
+                <span className="text-3xl font-bold font-orbitron text-white">{safeString(d.montant, "")} $</span>
             </div>
             <p className="text-xs text-gray-400 mt-1">
-                <span className="font-bold text-white">Conditions de paiement :</span> {data.conditions_paiement}
+                <span className="font-bold text-white">Conditions de paiement :</span> {safeString(d.conditions_paiement, "")}
             </p>
         </div>
 
@@ -100,9 +106,9 @@ export default function ContratPreview({ data, logo }) {
             <div className="text-center w-48">
                 <p className="font-orbitron text-xs font-bold text-neon-blue mb-4">POUR LE CABINET</p>
                 <div className="relative h-20 w-full border-b border-gray-600 flex items-end justify-center pb-2">
-                    <span className="font-signature text-neon-blue text-4xl -rotate-6">{data.avocat.split(" ").pop()}</span>
+                    <span className="font-signature text-neon-blue text-4xl -rotate-6">{avocatSignature}</span>
                 </div>
-                <p className="text-[10px] uppercase mt-1 text-gray-500">{data.avocat}</p>
+                <p className="text-[10px] uppercase mt-1 text-gray-500">{avocatName}</p>
             </div>
 
             {/* Signature Client */}

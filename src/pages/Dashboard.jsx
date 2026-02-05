@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from "firebase/auth";
-import { collection, getDocs, addDoc, query, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, addDoc, query, serverTimestamp, orderBy, limit, startAfter } from "firebase/firestore";
 import { auth, db } from '../firebase';
 import { LogOut, Plus, User, FolderOpen, X, Fingerprint, Activity, Building2, Users, Search, ChevronDown, ArrowUpRight } from 'lucide-react';
 import Layout from '../components/layout/Layout';
@@ -13,6 +13,10 @@ export default function Dashboard() {
   const [queryText, setQueryText] = useState("");
   const [activeType, setActiveType] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
+  const PAGE_SIZE = 12;
+  const [lastDoc, setLastDoc] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   
   // États Modal Création
   const [showModal, setShowModal] = useState(false);
@@ -29,10 +33,18 @@ export default function Dashboard() {
     return Number.isNaN(parsed) ? 0 : parsed;
   };
 
-  const fetchDossiers = async () => {
-    setLoading(true);
+  const fetchDossiers = async ({ append = false } = {}) => {
+    if (append) setLoadingMore(true);
+    else setLoading(true);
     try {
-      const q = query(collection(db, "clients")); 
+      const baseQuery = [
+        collection(db, "clients"),
+        orderBy("createdAt", "desc"),
+        limit(PAGE_SIZE),
+      ];
+      const q = append && lastDoc
+        ? query(...baseQuery, startAfter(lastDoc))
+        : query(...baseQuery);
       const querySnapshot = await getDocs(q);
       const data = querySnapshot.docs.map(doc => {
         const payload = doc.data();
@@ -42,10 +54,21 @@ export default function Dashboard() {
           createdAtMs: getCreatedAtMs(payload.createdAt),
         };
       });
-      data.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
-      setDossiers(data);
+      const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1] || null;
+      setLastDoc(lastVisible);
+      setHasMore(querySnapshot.docs.length === PAGE_SIZE);
+      if (append) {
+        setDossiers((prev) => {
+          const map = new Map(prev.map((item) => [item.id, item]));
+          data.forEach((item) => map.set(item.id, item));
+          return Array.from(map.values());
+        });
+      } else {
+        setDossiers(data);
+      }
     } catch (error) { console.error("Erreur système:", error); }
-    setLoading(false);
+    if (append) setLoadingMore(false);
+    else setLoading(false);
   };
 
   const handleConfirmCreation = async (e) => {
@@ -419,6 +442,17 @@ export default function Dashboard() {
                   </button>
                 )}
               </div>
+            </div>
+          )}
+          {!loading && hasMore && (
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={() => fetchDossiers({ append: true })}
+                disabled={loadingMore}
+                className="px-6 py-2 border border-gray-700 text-gray-300 font-orbitron text-xs uppercase tracking-wider hover:border-neon-blue hover:text-neon-blue transition-all disabled:opacity-50"
+              >
+                {loadingMore ? "CHARGEMENT..." : "CHARGER PLUS"}
+              </button>
             </div>
           )}
         </section>

@@ -3,9 +3,13 @@ import { X, Download, Save } from 'lucide-react';
 import ContratPreview from './ContratPreview';
 
 export default function ContratEditor({ client, onClose, savedData, onSave, onHistoryAdd }) {
+  const safeString = (value, fallback = "") =>
+    typeof value === "string" ? value : value == null ? fallback : String(value);
+  const clientIdRef = client?.id ? client.id.substring(0, 4).toUpperCase() : "0000";
+
   const defaultData = {
     date: new Date().toLocaleDateString('fr-FR'),
-    ref_dossier: `REF-${client?.id?.substring(0,4).toUpperCase() || "0000"}`,
+    ref_dossier: `REF-${clientIdRef}`,
     avocat: "Maître Moore",
     client: client?.nom || "CLIENT INCONNU",
     objet: "Défense dans le cadre de l'affaire pénale...",
@@ -29,16 +33,22 @@ export default function ContratEditor({ client, onClose, savedData, onSave, onHi
 
     // 2. Historique (NOUVEAU)
     if (onHistoryAdd) {
-        onHistoryAdd("CONTRAT", data.ref_dossier, "Mandat de défense");
+        onHistoryAdd(
+          "CONTRAT",
+          data.ref_dossier,
+          "Mandat de défense",
+          { ...data }
+        );
     }
 
     // 3. PDF
     const element = document.getElementById('contrat-preview');
     if (!element) return;
     const { default: html2pdf } = await import('html2pdf.js');
+    const clientName = safeString(data.client, "");
     const opt = {
       margin: 0,
-      filename: `CONTRAT_${data.client.replace(/ /g, '_')}.pdf`,
+      filename: `CONTRAT_${clientName.replace(/ /g, '_')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, backgroundColor: '#000000', logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }

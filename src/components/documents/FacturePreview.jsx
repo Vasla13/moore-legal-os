@@ -1,6 +1,14 @@
 import React from 'react';
 
 export default function FacturePreview({ data, items, sousTotal, montantFrais, totalFinal }) {
+  const safeString = (value, fallback = "") =>
+    typeof value === "string" ? value : value == null ? fallback : String(value);
+  const safeItems = Array.isArray(items) ? items : [];
+  const safeSousTotal = Number.isFinite(sousTotal) ? sousTotal : 0;
+  const safeMontantFrais = Number.isFinite(montantFrais) ? montantFrais : 0;
+  const safeTotalFinal = Number.isFinite(totalFinal) ? totalFinal : 0;
+  const d = data ?? {};
+
   return (
     <div 
       id="facture-preview" 
@@ -20,13 +28,13 @@ export default function FacturePreview({ data, items, sousTotal, montantFrais, t
              <h1 className="text-4xl font-orbitron font-bold tracking-widest text-white uppercase mb-1">
                 FACTURE
              </h1>
-             <p className="font-mono text-neon-blue text-sm tracking-widest">#{data.ref_facture}</p>
+             <p className="font-mono text-neon-blue text-sm tracking-widest">#{safeString(d.ref_facture, "")}</p>
          </div>
          <div className="text-right">
              <h2 className="font-bold text-lg text-white">MOORE LEGAL</h2>
              <p className="font-mono text-gray-400 text-xs">Services Juridiques & Conseil</p>
              <p className="font-mono text-gray-400 text-xs">Los Santos, San Andreas</p>
-             <p className="font-mono text-white text-sm mt-2 font-bold">Date: {data.date}</p>
+             <p className="font-mono text-white text-sm mt-2 font-bold">Date: {safeString(d.date, "")}</p>
          </div>
       </div>
 
@@ -34,13 +42,13 @@ export default function FacturePreview({ data, items, sousTotal, montantFrais, t
       <div className="flex justify-between items-center mb-10 relative z-10">
         <div className="w-1/2">
             <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">FACTURÉ À :</p>
-            <p className="text-xl font-bold text-white uppercase">{data.client}</p>
-            <p className="text-sm text-gray-400 font-mono">{data.adresse_client}</p>
+            <p className="text-xl font-bold text-white uppercase">{safeString(d.client, "")}</p>
+            <p className="text-sm text-gray-400 font-mono">{safeString(d.adresse_client, "")}</p>
         </div>
         <div className="w-1/2 text-right">
              <div className="inline-block bg-gray-900 border border-gray-700 p-4 rounded text-center min-w-[150px]">
                 <p className="text-xs text-gray-500 uppercase">MONTANT DU</p>
-                <p className="text-2xl font-bold text-neon-blue font-orbitron">{totalFinal.toFixed(2)} $</p>
+                <p className="text-2xl font-bold text-neon-blue font-orbitron">{safeTotalFinal.toFixed(2)} $</p>
              </div>
         </div>
       </div>
@@ -55,7 +63,7 @@ export default function FacturePreview({ data, items, sousTotal, montantFrais, t
                 </tr>
             </thead>
             <tbody className="font-mono text-sm text-gray-300">
-                {items.map((item) => (
+                {safeItems.map((item) => (
                     <tr key={item.id} className="border-b border-gray-800">
                         <td className="py-4 pr-4">{item.description}</td>
                         <td className="py-4 text-right text-white font-bold">{Number(item.prix).toFixed(2)} $</td>
@@ -78,16 +86,16 @@ export default function FacturePreview({ data, items, sousTotal, montantFrais, t
             <div className="w-1/2">
                 <div className="flex justify-between py-2 border-b border-gray-800 text-gray-400 text-sm">
                     <span>SOUS-TOTAL</span>
-                    <span>{sousTotal.toFixed(2)} $</span>
+                    <span>{safeSousTotal.toFixed(2)} $</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-800 text-gray-400 text-sm">
                     {/* Le taux est maintenant dynamique */}
-                    <span>FRAIS DE DOSSIER ({data.frais_taux}%)</span>
-                    <span>{montantFrais.toFixed(2)} $</span>
+                    <span>FRAIS DE DOSSIER ({safeString(d.frais_taux, "0")}%)</span>
+                    <span>{safeMontantFrais.toFixed(2)} $</span>
                 </div>
                 <div className="flex justify-between py-4 text-xl font-bold text-white font-orbitron">
                     <span>TOTAL À PAYER</span>
-                    <span className="text-neon-blue">{totalFinal.toFixed(2)} $</span>
+                    <span className="text-neon-blue">{safeTotalFinal.toFixed(2)} $</span>
                 </div>
             </div>
         </div>
@@ -97,7 +105,7 @@ export default function FacturePreview({ data, items, sousTotal, montantFrais, t
             <div>
                 <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">INFORMATIONS DE PAIEMENT (VIREMENT)</p>
                 <p className="text-sm font-bold text-white">BANQUE : <span className="font-mono font-normal">MAZE BANK</span></p>
-                <p className="text-sm font-bold text-white">COMPTE : <span className="font-mono font-normal text-neon-blue">{data.compte_bancaire}</span></p>
+                <p className="text-sm font-bold text-white">COMPTE : <span className="font-mono font-normal text-neon-blue">{safeString(d.compte_bancaire, "")}</span></p>
             </div>
             <div className="text-right">
                 <p className="text-[10px] text-gray-600 italic">Facture payable à réception.</p>

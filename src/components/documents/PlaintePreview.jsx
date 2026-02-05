@@ -1,6 +1,17 @@
 import React from 'react';
 
 export default function PlaintePreview({ data, pieces }) {
+  const safeString = (value, fallback = "") =>
+    typeof value === "string" ? value : value == null ? fallback : String(value);
+  const d = data ?? {};
+  const infractionsText = safeString(d.infractions, "");
+  const infractionsList = infractionsText
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const safePieces = Array.isArray(pieces) ? pieces : [];
+
   return (
     <div 
       id="plainte-preview" 
@@ -23,13 +34,13 @@ export default function PlaintePreview({ data, pieces }) {
                 CABINET MOORE
              </h1>
              <p className="font-mono text-gray-400 text-xs">Avocats au Barreau de San Andreas</p>
-             <p className="font-mono text-gray-400 text-xs mt-2">Dossier n°: {data.ref_dossier}</p>
+             <p className="font-mono text-gray-400 text-xs mt-2">Dossier n°: {safeString(d.ref_dossier, "")}</p>
          </div>
          <div className="w-1/2 text-right">
              <p className="font-bold text-white uppercase mb-1">À l'attention du Procureur / LSPD</p>
              <p className="font-mono text-gray-400 text-xs">Bureau des Plaintes</p>
              <p className="font-mono text-gray-400 text-xs">Mission Row Police Dept.</p>
-             <p className="font-mono text-white text-sm mt-4 font-bold">Le {data.date}</p>
+             <p className="font-mono text-white text-sm mt-4 font-bold">Le {safeString(d.date, "")}</p>
          </div>
       </div>
 
@@ -38,11 +49,11 @@ export default function PlaintePreview({ data, pieces }) {
         <div className="bg-gray-900/50 p-4 border-l-4 border-red-500 flex justify-between items-center">
             <div>
                 <p className="text-gray-400 text-xs uppercase tracking-wider">OBJET DE LA REQUÊTE</p>
-                <p className="font-bold text-xl uppercase text-white">DÉPÔT DE PLAINTE CONTRE <span className="text-red-500">{data.accuse}</span></p>
+                <p className="font-bold text-xl uppercase text-white">DÉPÔT DE PLAINTE CONTRE <span className="text-red-500">{safeString(d.accuse, "")}</span></p>
             </div>
             <div className="text-right">
                 <p className="text-gray-400 text-xs uppercase">POUR LE COMPTE DE</p>
-                <p className="font-bold text-white">{data.victime}</p>
+                <p className="font-bold text-white">{safeString(d.victime, "")}</p>
             </div>
         </div>
       </div>
@@ -56,7 +67,7 @@ export default function PlaintePreview({ data, pieces }) {
                 <span className="bg-neon-blue text-black text-xs px-1.5 py-0.5 rounded">I</span> EXPOSÉ DES FAITS
             </h3>
             <div className="pl-2 border-l border-gray-800 ml-1 text-gray-300 whitespace-pre-wrap">
-                {data.faits}
+                {safeString(d.faits, "")}
             </div>
         </div>
 
@@ -67,9 +78,10 @@ export default function PlaintePreview({ data, pieces }) {
             </h3>
             <div className="pl-2 ml-1 text-gray-300">
                 <ul className="list-disc pl-5 space-y-1 font-bold text-white">
-                    {data.infractions.split('\n').map((item, index) => (
+                    {infractionsList.map((item, index) => (
                         <li key={index}>{item}</li>
                     ))}
+                    {infractionsList.length === 0 && <li>Aucune infraction renseignée.</li>}
                 </ul>
             </div>
         </div>
@@ -82,22 +94,22 @@ export default function PlaintePreview({ data, pieces }) {
             
             {/* Liste Textuelle des pièces */}
             <div className="pl-2 ml-1 text-xs font-mono text-gray-300 mb-6 space-y-2">
-                {pieces.map((p) => (
+                {safePieces.map((p) => (
                     <div key={p.id} className="flex items-start gap-3">
                         <div className="bg-gray-800 text-neon-blue px-2 py-0.5 rounded font-bold whitespace-nowrap">PIÈCE #{p.id}</div>
                         <div className="uppercase tracking-wide pt-0.5">{p.description}</div>
                         {p.image && <div className="text-[10px] text-gray-500 italic pt-0.5">(Voir Annexe Visuelle)</div>}
                     </div>
                 ))}
-                {pieces.length === 0 && <p className="italic text-gray-600">Aucune pièce jointe.</p>}
+                {safePieces.length === 0 && <p className="italic text-gray-600">Aucune pièce jointe.</p>}
             </div>
 
             {/* ANNEXES VISUELLES (Images uniquement si présentes) */}
-            {pieces.some(p => p.image) && (
+            {safePieces.some((p) => p.image) && (
                 <div className="mt-8 border-t border-gray-800 pt-4">
                     <p className="text-xs text-gray-500 mb-4 font-mono uppercase text-center font-bold tracking-widest">--- ANNEXES VISUELLES ---</p>
                     <div className="grid grid-cols-2 gap-6">
-                        {pieces.map((p) => (
+                        {safePieces.map((p) => (
                             p.image && (
                                 <div key={p.id} className="border border-gray-700 bg-gray-900 p-2 break-inside-avoid">
                                     <div className="bg-neon-blue text-black text-xs font-bold px-2 py-1 inline-block mb-2">
@@ -128,9 +140,9 @@ export default function PlaintePreview({ data, pieces }) {
         <div className="text-center w-48">
             <p className="font-orbitron text-xs font-bold text-neon-blue mb-4">L'AVOCAT REQUÉRANT</p>
             <div className="relative h-16 w-full border-b border-gray-600 flex items-end justify-center pb-1">
-                <span className="font-signature text-white text-3xl -rotate-6">{data.avocat.split(" ").pop()}</span>
+                <span className="font-signature text-white text-3xl -rotate-6">{safeString(d.avocat, "").trim().split(/\s+/).pop() || safeString(d.avocat, "")}</span>
             </div>
-            <p className="text-[10px] uppercase mt-1 text-gray-500">{data.avocat}</p>
+            <p className="text-[10px] uppercase mt-1 text-gray-500">{safeString(d.avocat, "")}</p>
         </div>
       </div>
 

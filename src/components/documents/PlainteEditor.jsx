@@ -3,11 +3,14 @@ import { X, Download, Plus, Trash2, Image as ImageIcon, Save } from 'lucide-reac
 import PlaintePreview from './PlaintePreview';
 
 export default function PlainteEditor({ client, onClose, savedData, onSave, onHistoryAdd }) {
+  const safeString = (value, fallback = "") =>
+    typeof value === "string" ? value : value == null ? fallback : String(value);
+  const clientIdRef = client?.id ? client.id.substring(0, 4).toUpperCase() : "0000";
   
   // --- DONNÉES PAR DÉFAUT (Génériques) ---
   const defaultData = {
     date: new Date().toLocaleDateString('fr-FR'),
-    ref_dossier: `P-${client?.id?.substring(0,4).toUpperCase() || "0000"}`,
+    ref_dossier: `P-${clientIdRef}`,
     avocat: "Maître Moore",
     victime: client?.nom || "NOM DU CLIENT",
     accuse: "X (Ou Nom de l'accusé)",
@@ -83,9 +86,10 @@ export default function PlainteEditor({ client, onClose, savedData, onSave, onHi
     const element = document.getElementById('plainte-preview');
     if (!element) return;
     const { default: html2pdf } = await import('html2pdf.js');
+    const victimeName = safeString(data.victime, "");
     const opt = {
       margin: 0,
-      filename: `PLAINTE_${data.victime.replace(/ /g, '_')}.pdf`,
+      filename: `PLAINTE_${victimeName.replace(/ /g, '_')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, backgroundColor: '#000000', logging: false },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
